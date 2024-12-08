@@ -196,7 +196,6 @@ grep -rl postgres_ | grep -E "\.py$|\.sql$|\.toml$|\.md$" | xargs sed -i 's/post
 
 
 
-
 执行 `dbt run` 来运行项目,将raw开头的表经过数据清洗转换后加载到stg开头的表。
 ```bash
 # 运行项目
@@ -208,33 +207,27 @@ dbt run -d --print
 运行成功会得到如下输出：
 ```bash
 ... ...
-03:54:30  Connection 'master' was properly closed.
-03:54:30  Connection 'model.jaffle_shop.stg_supplies' was properly closed.
-03:54:30  Connection 'model.jaffle_shop.stg_products' was properly closed.
-03:54:30  Connection 'model.jaffle_shop.stg_order_items' was properly closed.
-03:54:30  Connection 'model.jaffle_shop.stg_orders' was properly closed.
-03:54:30
-03:54:30  Finished running 6 table models in 0 hours 0 minutes and 4.02 seconds (4.02s).
-03:54:30  Command end result
-03:54:30
-03:54:30  Completed successfully
-03:54:30
-03:54:30  Done. PASS=6 WARN=0 ERROR=0 SKIP=0 TOTAL=6
-03:54:30  Resource report: {"command_name": "run", "command_success": true, "command_wall_clock_time": 5.962977, "process_in_blocks": "0", "process_kernel_time": 0.210429, "process_mem_max_rss": "111980", "process_out_blocks": "3344", "process_user_time": 5.56017}
-03:54:30  Command `dbt run` succeeded at 11:54:30.798747 after 5.96 seconds
-03:54:30  Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffffb9f0ed90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffffb9b69dc0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffffb89f9910>]}
-03:54:30  Flushing usage events
-03:54:31  Sending 1 of 2
+11:40:54  Finished running 7 table models in 0 hours 0 minutes and 2.81 seconds (2.81s).
+11:40:54  Command end result
+11:40:54
+11:40:54  Completed successfully
+11:40:54
+11:40:54  Done. PASS=7 WARN=0 ERROR=0 SKIP=0 TOTAL=7
+11:40:54  Resource report: {"command_name": "run", "command_success": true, "command_wall_clock_time": 9.665491, "process_in_blocks": "0", "process_kernel_time": 0.303831, "process_mem_max_rss": "116404", "process_out_blocks": "5280", "process_user_time": 10.275382}
+11:40:54  Command `dbt run` succeeded at 19:40:54.741590 after 9.67 seconds
+11:40:54  Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffffa04fcdf0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9fe34520>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9eff5700>]}
+11:40:54  Flushing usage events
 ```
 
 在GaussDB中查看数据：
 ```sql
-ANALYZE jaffle_shop.stg_customers;
-ANALYZE jaffle_shop.stg_order_items;
-ANALYZE jaffle_shop.stg_orders;
-ANALYZE jaffle_shop.stg_products;
-ANALYZE jaffle_shop.stg_locations;
-ANALYZE jaffle_shop.stg_supplies;
+ANALYZE jaffle_shop.customers;
+ANALYZE jaffle_shop.order_items;
+ANALYZE jaffle_shop.orders;
+ANALYZE jaffle_shop.products;
+ANALYZE jaffle_shop.locations;
+ANALYZE jaffle_shop.supplies;
+ANALYZE jaffle_shop.metricflow_time_spine;
 
 SELECT
     relname AS table_name,
@@ -245,33 +238,26 @@ JOIN
     pg_namespace n ON c.relnamespace = n.oid
 WHERE
     n.nspname = 'jaffle_shop'
-    AND c.relkind = 'r'  -- 只查询普通表
-    AND c.relname like 'stg%' -- 只查询stg开头的表
+    AND c.relkind = 'r'
+    AND c.relname not like 'stg%'
 ORDER BY
     table_name;
+
 ```
 
 
 输出结果：
-| #   | table_name       | table_row_count |
-|-----|------------------|-----------------|
-| 1   | stg_customers    | 935             |
-| 2   | stg_locations    | 6               |
-| 3   | stg_order_items  | 90,900          |
-| 4   | stg_orders       | 61,948          |
-| 5   | stg_products     | 10              |
-| 6   | stg_supplies     | 65              |
+| table_name            | table_row_count |
+|-----------------------|-----------------|
+| customers             | 934             |
+| locations             | 5               |
+| metricflow_time_spine | 3651            |
+| order_items           | 90899           |
+| orders                | 61947           |
+| products              | 9               |
+| supplies              | 64              |
 
-（可选步骤）导出数据到csv文件：
-```sql
--- 通过GaussDB客户端gsql登录，使用\copy命令导出数据到csv文件
-\copy (select * from jaffle_shop.stg_customers) to '/tmp/stg_customers.csv' csv delimiter ',' quote '"';
-\copy (select * from jaffle_shop.stg_locations) to '/tmp/stg_locations.csv' csv delimiter ',' quote '"';
-\copy (select * from jaffle_shop.stg_order_items) to '/tmp/stg_order_items.csv' csv delimiter ',' quote '"';
-\copy (select * from jaffle_shop.stg_orders) to '/tmp/stg_orders.csv' csv delimiter ',' quote '"';
-\copy (select * from jaffle_shop.stg_products) to '/tmp/stg_products.csv' csv delimiter ',' quote '"';
-\copy (select * from jaffle_shop.stg_supplies) to '/tmp/stg_supplies.csv' csv delimiter ',' quote '"';
-```
+至此，dbt core的jaffle-shop-dws项目已经运行成功。
 
 
 ## 基于Docker运行项目
