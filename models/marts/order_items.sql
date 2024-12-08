@@ -2,26 +2,26 @@ with
 
 order_items as (
 
-    select * from {{ source('jaffle_shop', 'stg_order_items') }}
+    select * from {{ source('ecom', 'stg_order_items') }}
 
 ),
 
 
 orders as (
 
-    select * from   {{ source('jaffle_shop', 'stg_orders') }}
+    select * from   {{ source('ecom', 'stg_orders') }}
 
 ),
 
 products as (
 
-    select * from {{ source('jaffle_shop', 'stg_products') }}
+    select * from {{ source('ecom', 'stg_products') }}
 
 ),
 
 supplies as (
 
-    select * from  {{ source('jaffle_shop', 'stg_supplies') }}
+    select * from  {{ source('ecom', 'stg_supplies') }}
 
 ),
 

@@ -2,7 +2,7 @@ with
 
 orders as (
 
-    select * from   {{ source('jaffle_shop', 'stg_orders') }}
+    select * from  {{ source('ecom', 'stg_orders') }}
 
 ),
 

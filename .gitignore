@@ -16,6 +16,7 @@ dws_create_stg_tables.sql
 .DS_Store
 
 .user.yml
+init.sh
 
 .ruff_cache
 __pycache__

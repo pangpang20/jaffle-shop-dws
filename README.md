@@ -176,96 +176,26 @@ connection to server at "xx.xx.xx.xx", port 8000 failed: none of the server's SA
     >>> exit()
   ```
 重新执行上面的测试连接命令，如果成功，说明psycopg2已经替换成功了。
+### 安装依赖
 
-### 加载数据
 
-使用下面的命令加载数据，数据文件位于`seeds/`目录下：
-- raw_customers.csv
-- raw_items.csv
-- raw_supplies.csv
-- raw_stores.csv
-- raw_products.csv
-- raw_orders.csv
-
-会在GaussDB的数据库dbt_test.jaffle_shop中创建表raw开头的6张表，并加载数据：
 ```bash
-dbt seed
-```
+# 安装依赖
+dpt deps
 
-如果出现下面的错误：
-```bash
-/opt/jaffle-shop-gaussdb/.venv/lib64/python3.9/site-packages/networkx/utils/backends.py:135: RuntimeWarning: networkx backend defined more than once: nx-loopback
-  backends.update(_get_backends("networkx.backends"))
-03:53:24  Running with dbt=1.8.9
-03:53:24  Registered adapter: gaussdbdws=1.0.1
-03:53:24  Encountered an error:
-Compilation Error
-  dbt found 3 package(s) specified in packages.yml, but only 0 package(s) installed in dbt_packages. Run "dbt deps" to install package dependencies.
-```
-请参考提示执行：
-```bash
-git config --global http.version HTTP/1.1
-dbt deps
-```
-
-数据导入成功会得到如下输出：
-```bash
-03:38:30  1 of 6 START seed file jaffle_shop.raw_customers ............................... [RUN]
-03:38:30  2 of 6 START seed file jaffle_shop.raw_items ................................... [RUN]
-03:38:30  3 of 6 START seed file jaffle_shop.raw_orders .................................. [RUN]
-03:38:30  4 of 6 START seed file jaffle_shop.raw_products ................................ [RUN]
-03:38:33  4 of 6 OK loaded seed file jaffle_shop.raw_products ............................ [INSERT 10 in 2.28s]
-03:38:33  5 of 6 START seed file jaffle_shop.raw_stores .................................. [RUN]
-03:38:34  1 of 6 OK loaded seed file jaffle_shop.raw_customers ........................... [INSERT 935 in 3.37s]
-03:38:34  6 of 6 START seed file jaffle_shop.raw_supplies ................................ [RUN]
-03:38:35  5 of 6 OK loaded seed file jaffle_shop.raw_stores .............................. [INSERT 6 in 1.93s]
-03:38:36  6 of 6 OK loaded seed file jaffle_shop.raw_supplies ............................ [INSERT 65 in 1.87s]
-03:40:25  2 of 6 OK loaded seed file jaffle_shop.raw_items ............................... [INSERT 90900 in 114.72s]
-03:41:00  3 of 6 OK loaded seed file jaffle_shop.raw_orders .............................. [INSERT 61948 in 149.65s]
-03:41:00
-03:41:00  Finished running 6 seeds in 0 hours 2 minutes and 31.90 seconds (151.90s).
-03:41:00
-03:41:00  Completed successfully
-03:41:00
-03:41:00  Done. PASS=6 WARN=0 ERROR=0 SKIP=0 TOTAL=6
-```
-
-在GaussDB中查看数据：
-```sql
-ANALYZE jaffle_shop.raw_customers;
-ANALYZE jaffle_shop.raw_items;
-ANALYZE jaffle_shop.raw_orders;
-ANALYZE jaffle_shop.raw_products;
-ANALYZE jaffle_shop.raw_stores;
-ANALYZE jaffle_shop.raw_supplies;
-
-SELECT
-    relname AS table_name,
-    reltuples::BIGINT AS table_row_count
-FROM
-    pg_class c
-JOIN
-    pg_namespace n ON c.relnamespace = n.oid
-WHERE
-    n.nspname = 'jaffle_shop'
-    AND c.relkind = 'r'  -- 只查询普通表
-ORDER BY
-    table_name;
+# 修改文件中的关键字postgresql为gaussdbdws，因为依赖包中的dbt_packages/dbt_date还不支持gaussdb，需要替换
+grep -rl postgresql | grep -E "\.py$|\.sql$|\.toml$|\.md$" | xargs sed -i 's/postgresql/gaussdbdws/g'
+grep -rl postgres_ | grep -E "\.py$|\.sql$|\.toml$|\.md$" | xargs sed -i 's/postgres_/gaussdbdws_/g'
 
 ```
-
-输出结果：
-| #   | table_name    | table_row_count |
-|-----|---------------|-----------------|
-| 1   | raw_customers | 935             |
-| 2   | raw_items     | 90,900          |
-| 3   | raw_orders    | 61,948          |
-| 4   | raw_products  | 10              |
-| 5   | raw_stores    | 6               |
-| 6   | raw_supplies  | 65              |
-
 
 ### 运行项目
+前提条件：
+- 数据库中已创建好schema为`jaffle_shop`
+- 已经存在stg_开头的表
+
+
+
 
 执行 `dbt run` 来运行项目,将raw开头的表经过数据清洗转换后加载到stg开头的表。
 ```bash

@@ -54,7 +54,7 @@ unit_tests:
               is_drink_item: false,
               is_food_item: true,
             }
-      - input: {{ source('jaffle_shop', 'stg_orders') }}
+      - input: ref('stg_orders')
         rows:
           - { order_id: 1 }
           - { order_id: 2 }
