@@ -89,7 +89,7 @@ profile: jaffle_shop
 ```
 DEMO中已经配置好了，如果不一致，请参考上面修改。
 
-参数`gaussdb_type` ,默认为0，主要区分是否有系统表`pg_matviews`,如果存在，设置为1。一般内核9.x的默认是没有这个系统表，需要设置为0。
+参数`gaussdb_type` ,默认为1，主要区分是否有系统表`pg_matviews`,如果存在，设置为1。一般DWS集群版本为8.x，需要设置为0，9.x设置为1。
 
 ### 测试连接
 使用下面的命令测试连接
@@ -140,13 +140,13 @@ connection to server at "xx.xx.xx.xx", port 8000 failed: none of the server's SA
     wget -O /tmp/GaussDB_driver.zip https://dbs-download.obs.cn-north-1.myhuaweicloud.com/GaussDB/1730887196055/GaussDB_driver.zip
 
     # 解压下载的文件
-    unzip /tmp/GaussDB_driver.zip -d /tmp/ && rm /tmp/GaussDB_driver.zip
+    unzip /tmp/GaussDB_driver.zip -d /tmp/ && rm -rf /tmp/GaussDB_driver.zip
 
     # 复制驱动到临时目录
     \cp /tmp/GaussDB_driver/Centralized/Hce2_arm_64/GaussDB-Kernel_505.2.0_Hce_64bit_Python.tar.gz /tmp/
 
     # 解压版本对应驱动包
-    tar -zxvf /tmp/GaussDB-Kernel_505.2.0_Hce_64bit_Python.tar.gz -C /tmp/ && rm /tmp/GaussDB-Kernel_505.2.0_Hce_64bit_Python.tar.gz
+    tar -zxvf /tmp/GaussDB-Kernel_505.2.0_Hce_64bit_Python.tar.gz -C /tmp/ && rm -rf /tmp/GaussDB-Kernel_505.2.0_Hce_64bit_Python.tar.gz
 
     # 卸载原生psycopg2
     pip uninstall -y $(pip list | grep psycopg2 | awk '{print $1}')
@@ -175,7 +175,7 @@ connection to server at "xx.xx.xx.xx", port 8000 failed: none of the server's SA
     >>> import psycopg2
     >>> exit()
   ```
-
+重新执行上面的测试连接命令，如果成功，说明psycopg2已经替换成功了。
 
 ### 加载数据
 

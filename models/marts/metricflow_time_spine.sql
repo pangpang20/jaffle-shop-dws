@@ -17,4 +17,3 @@ cast_to_date as (
 )
 
 select * from cast_to_date
-
