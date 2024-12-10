@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     gnutls-bin \
     libgnutls30 \
+    vim \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY . /dbt_app/
@@ -47,14 +48,14 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && 
 
 RUN ln -s /usr/bin/python3 /usr/bin/python && \
     python3 -m venv /dbt_app/.venv
-    
+
 
 ENV PATH="/dbt_app/.venv/bin:$PATH"
 
 RUN chmod +x /dbt_app/entrypoint.sh && \
     /dbt_app/.venv/bin/python3 -m pip install -r /dbt_app/requirements.txt && \
-    /dbt_app/.venv/bin/python3 -m pip install dbt-core dbt-gaussdbdws 
-    
+    /dbt_app/.venv/bin/python3 -m pip install dbt-core dbt-gaussdbdws
+
 RUN git config --global http.version HTTP/1.1 && \
     /dbt_app/.venv/bin/dbt deps && \
     grep -rl postgresql | grep -E "\.py$|\.sql$|\.toml$|\.md$" | xargs sed -i 's/postgresql/gaussdbdws/g' && \
@@ -76,5 +77,3 @@ ENV PYTHONPATH="${PYTHONPATH}:$(/dbt_app/.venv/bin/python3 -c 'import site; prin
 ENV LD_LIBRARY_PATH="/tmp/lib:$LD_LIBRARY_PATH"
 
 ENTRYPOINT ["/dbt_app/entrypoint.sh"]
-
-CMD ["bash"]
