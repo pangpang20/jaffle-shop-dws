@@ -196,7 +196,7 @@ grep -rl postgres_ | grep -E "\.py$|\.sql$|\.toml$|\.md$" | xargs sed -i 's/post
 
 
 
-执行 `dbt run` 来运行项目,将raw开头的表经过数据清洗转换后加载到stg开头的表。
+执行 `dbt run` 来运行项目,将stg开头的表经过数据清洗转换后加载结果表。
 ```bash
 # 运行项目
 dbt run
@@ -329,7 +329,8 @@ dbt debug
 
 ### 运行项目
 
-执行 `dbt run` 来运行项目,将raw开头的表经过数据清洗转换后加载到stg开头的表。
+执行 `dbt run` 来运行项目,将stg开头的表经过数据清洗转换后加载结果表。
+
 ```bash
 # 运行项目
 dbt run
